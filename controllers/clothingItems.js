@@ -2,6 +2,7 @@ const ClothingItem = require("../models/clothingItem");
 
 const createItem = (req, res) => {
   console.log(req.body);
+  console.log("POST request to create item");
 
   const { name, weather, imageUrl, owner } = req.body;
 
@@ -45,25 +46,35 @@ const getItem = (req, res) => {
 
 const getItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => {
-      res.status(200).send(items);
-    })
+    .then((items) => res.status(200).send(items))
     .catch((err) => {
       console.error(err);
       return res.status(500).send({ message: "Error from getItems", err });
     });
 };
+
 const updateItem = (req, res) => {
   const { itemId } = req.params;
-  const { imageUrl } = req.body;
+  const { name, weather, imageUrl, owner } = req.body;
+
+  const updateFields = {};
+  if (name) updateFields.name = name;
+  if (weather) updateFields.weather = weather;
+  if (imageUrl) {
+    if (!validator.isURL(imageUrl)) {
+      return res.status(400).send({ message: "Invalid image URL" });
+    }
+    updateFields.imageUrl = imageUrl;
+  }
+  if (owner) updateFields.owner = owner;
 
   console.log("PUT request to update item");
   console.log("itemId:", itemId);
-  console.log("imageUrl:", imageUrl);
+  console.log("updateFields:", updateFields);
 
   ClothingItem.findByIdAndUpdate(
     itemId,
-    { $set: { imageUrl } },
+    { $set: updateFields },
     { new: true, runValidators: true }
   )
     .then((item) => {
