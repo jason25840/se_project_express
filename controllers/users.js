@@ -1,5 +1,4 @@
 const User = require("../models/user");
-const validator = require("validator");
 const { ERROR_CODES, ERROR_MESSAGES } = require("../utils/errors");
 
 const getUsers = (req, res) => {
@@ -55,12 +54,8 @@ const getUser = (req, res) => {
   User.findById(userId)
     .orFail(new Error(ERROR_MESSAGES.NOT_FOUND))
     .then((user) => {
-      if (!user) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
-      }
       res.status(200).send(user);
+      return null;
     })
     .catch((err) => {
       console.error(err);

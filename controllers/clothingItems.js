@@ -1,6 +1,6 @@
+const validator = require("validator");
 const ClothingItem = require("../models/clothingItem");
 const { ERROR_CODES, ERROR_MESSAGES } = require("../utils/errors");
-const validator = require("validator");
 
 const createItem = (req, res) => {
   console.log(req.body);
@@ -37,12 +37,8 @@ const getItem = (req, res) => {
   ClothingItem.findById(itemId)
     .orFail(new Error(ERROR_MESSAGES.NOT_FOUND))
     .then((item) => {
-      if (!item) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
-      }
       res.status(200).send(item);
+      return null;
     })
     .catch((err) => {
       console.error(err);
@@ -92,12 +88,8 @@ const updateItem = (req, res) => {
   )
     .orFail(new Error(ERROR_MESSAGES.NOT_FOUND))
     .then((item) => {
-      if (!item) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
-      }
       res.status(200).send(item);
+      return null;
     })
     .catch((err) => {
       console.error(err);
