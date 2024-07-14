@@ -20,7 +20,7 @@ const clothingItemSchema = new mongoose.Schema({
       validator: (value) => {
         return validator.isURL(value);
       },
-      message: "Image URL must be a valid URL",
+      message: (props) => `${props.value} is not a valid URL!`,
     },
   },
   owner: {
