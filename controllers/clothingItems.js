@@ -23,7 +23,7 @@ const createItem = (req, res) => {
       if (err.name === "ValidationError") {
         return res
           .status(ERROR_CODES.INVALID_DATA)
-          .send({ message: ERROR_MESSAGES.INVALID_DATA });
+          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
       }
       return res
         .status(ERROR_CODES.SERVER_ERROR)
