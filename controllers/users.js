@@ -8,31 +8,12 @@ const getUsers = (req, res) => {
       console.error(err);
       return res
         .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR, err });
+        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
     });
 };
 
 const createUser = (req, res) => {
   const { name, avatar } = req.body;
-  console.log(name, avatar);
-
-  if (!name || !avatar) {
-    return res.status(ERROR_CODES.BAD_REQUEST).send({
-      errors: {
-        ...(name ? {} : { name: { message: "Path `name` is required." } }),
-        ...(avatar
-          ? {}
-          : { avatar: { message: "Path `avatar` is required." } }),
-      },
-      _message: ERROR_MESSAGES.VALIDATION_FAILED,
-      name: "ValidationError",
-      message: `Validation failed: ${
-        name ? "" : "name: Path `name` is required."
-      }${!name && !avatar ? ", " : ""}${
-        avatar ? "" : "avatar: Path `avatar` is required."
-      }`,
-    });
-  }
 
   User.create({ name, avatar })
     .then((user) => res.status(201).send(user))
@@ -41,11 +22,11 @@ const createUser = (req, res) => {
       if (err.name === "ValidationError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.VALIDATION_FAILED, err });
+          .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
       }
       return res
         .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR, err });
+        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
     });
 };
 
@@ -59,14 +40,19 @@ const getUser = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      if (err.kind === "ObjectId" || err.name === "CastError") {
+      if (err.message === ERROR_MESSAGES.NOT_FOUND) {
+        return res
+          .status(ERROR_CODES.NOT_FOUND)
+          .send({ message: ERROR_MESSAGES.NOT_FOUND });
+      }
+      if (err.name === "CastError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.INVALID_USER_ID });
+          .send({ message: ERROR_MESSAGES.INVALID_ITEM_ID });
       }
       return res
         .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR, err });
+        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
     });
 };
 

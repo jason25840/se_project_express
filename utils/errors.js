@@ -5,11 +5,12 @@ const ERROR_CODES = {
 };
 
 const ERROR_MESSAGES = {
-  BAD_REQUEST:
-    "Invalid data passed to the methods for creating an item/user or updating an item, or invalid ID passed to the params.",
-  NOT_FOUND:
-    "No user or clothing item found with the requested id, or the request was sent to a non-existent address.",
-  SERVER_ERROR: "An error has occurred on the server.",
+  INVALID_DATA: "Invalid data provided",
+  NOT_FOUND: "Resource not found",
+  SERVER_ERROR: "An error has occurred on the server",
+  VALIDATION_ERROR: "Validation failed",
+  INVALID_URL: "Invalid image URL",
+  INVALID_ITEM_ID: "Invalid itemId",
 };
 
 module.exports = {
