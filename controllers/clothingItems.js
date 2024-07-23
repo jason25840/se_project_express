@@ -66,10 +66,22 @@ const getItems = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
-  ClothingItem.findByIdAndRemove(itemId)
+  const owner = req.user._id;
+
+  ClothingItem.findById(itemId)
     .orFail(new Error(ERROR_MESSAGES.NOT_FOUND))
-    .then((item) => res.status(200).send(item))
+    .then((item) => {
+      if (item.owner.toString() !== owner) {
+        return res
+          .status(ERROR_CODES.FORBIDDEN)
+          .send({ message: ERROR_MESSAGES.FORBIDDEN });
+      }
+      return ClothingItem.findByIdAndRemove(itemId).then((deletedItem) =>
+        res.status(200).send(deletedItem)
+      );
+    })
     .catch((err) => {
+      console.error(err);
       if (err.message === ERROR_MESSAGES.NOT_FOUND) {
         return res
           .status(ERROR_CODES.NOT_FOUND)
