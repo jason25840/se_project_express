@@ -18,40 +18,38 @@ const getUsers = (req, res) => {
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-
-    User.findOne({ email })
-      .then((existingUser) => {
-        if (existingUser) {
-          return res
-            .status(ERROR_CODES.BAD_REQUEST)
-            .send({ message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
-        }
-
-        return bcrypt.hash(password, 10);
-      })
-      .then((hashedPassword) => {
-        return User.create({ name, avatar, email, password: hashedPassword });
-      })
-      .then((user) => {
-        res.status(201).send(user);
-      })
-      .catch((err) => {
-        console.error(err);
-
-        if (err.code === 11000) {
-          return res
-            .status(ERROR_CODES.BAD_REQUEST)
-            .send({ message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
-        }
-        if (err.name === "ValidationError") {
-          return res
-            .status(ERROR_CODES.BAD_REQUEST)
-            .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
-        }
+  User.findOne({ email })
+    .then((existingUser) => {
+      if (existingUser) {
         return res
-          .status(ERROR_CODES.SERVER_ERROR)
-          .send({ message: ERROR_MESSAGES.SERVER_ERROR });
-      });
+          .status(ERROR_CODES.BAD_REQUEST)
+          .send({ message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
+      }
+
+      return bcrypt.hash(password, 10);
+    })
+    .then((hashedPassword) => {
+      return User.create({ name, avatar, email, password: hashedPassword });
+    })
+    .then((user) => {
+      return res.status(201).send(user);
+    })
+    .catch((err) => {
+      console.error(err);
+      if (err.code === 11000) {
+        return res
+          .status(ERROR_CODES.BAD_REQUEST)
+          .send({ message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
+      }
+      if (err.name === "ValidationError") {
+        return res
+          .status(ERROR_CODES.BAD_REQUEST)
+          .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
+      }
+      return res
+        .status(ERROR_CODES.SERVER_ERROR)
+        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+    });
 };
 
 const login = (req, res) => {
@@ -114,7 +112,7 @@ const getCurrentUser = (req, res) => {
           .status(ERROR_CODES.NOT_FOUND)
           .send({ message: ERROR_MESSAGES.NOT_FOUND });
       }
-      res.status(200).send(user);
+      return res.status(200).send(user);
     })
     .catch((err) => {
       console.error(err);
