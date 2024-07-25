@@ -7,6 +7,10 @@ const auth = require("./middlewares/auth");
 const app = express();
 const { PORT = 3001 } = process.env;
 
+if (process.env.NODE_ENV !== "test") {
+  app.use(auth);
+}
+
 if (process.env.NODE_ENV === "test") {
   app.use((req, res, next) => {
     req.user = {
@@ -18,12 +22,22 @@ if (process.env.NODE_ENV === "test") {
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
-  .then(() => {})
-  .catch(console.error);
+  .then(() => {
+    "Connected to MongoDB";
+  })
+  .catch((err) => {
+    console.error("Failed to connect to MongoDB", err);
+  });
 
-app.use(express.json());
-app.use("/", indexRouter);
 app.use(cors());
+app.use(express.json());
 app.use(auth);
+app.use("/", indexRouter);
 
-app.listen(PORT, () => {});
+app.get("/", (req, res) => {
+  res.send("Server is running");
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
