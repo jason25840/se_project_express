@@ -23,7 +23,7 @@ const createUser = (req, res) => {
       if (existingUser) {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
+          .json({ message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
       }
 
       return bcrypt.hash(password, 10);
