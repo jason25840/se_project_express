@@ -28,18 +28,16 @@ mongoose
 app.use(cors());
 app.use(express.json());
 
-if (process.env.NODE_ENV !== "test") {
-  app.use(auth);
-}
+//if (process.env.NODE_ENV !== "test") {
+//  app.use(auth);
+//}
 
+app.use(auth);
 app.use("/", indexRouter);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
-
-app.use("/users", auth, indexRouter);
-app.use("/items", auth, indexRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
