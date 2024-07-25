@@ -7,23 +7,19 @@ const auth = require("./middlewares/auth");
 const app = express();
 const { PORT = 3001 } = process.env;
 
-if (process.env.NODE_ENV !== "test") {
-  app.use(auth);
-}
-
-if (process.env.NODE_ENV === "test") {
-  app.use((req, res, next) => {
-    req.user = {
-      _id: "5d8b8592978f8bd833ca8133",
-    };
-    next();
-  });
-}
+//if (process.env.NODE_ENV === "test") {
+//  app.use((req, res, next) => {
+//    req.user = {
+//      _id: "5d8b8592978f8bd833ca8133",
+//    };
+//    next();
+//  });
+//}
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {
-    "Connected to MongoDB";
+    console.log("Connected to MongoDB");
   })
   .catch((err) => {
     console.error("Failed to connect to MongoDB", err);
@@ -31,12 +27,19 @@ mongoose
 
 app.use(cors());
 app.use(express.json());
-app.use(auth);
+
+if (process.env.NODE_ENV !== "test") {
+  app.use(auth);
+}
+
 app.use("/", indexRouter);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
+
+app.use("/users", auth, indexRouter);
+app.use("/items", auth, indexRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

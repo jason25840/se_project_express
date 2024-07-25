@@ -4,8 +4,8 @@ const auth = require("../middlewares/auth");
 
 const { updateProfile } = require("../controllers/users");
 
-router.get("/", getUsers);
-router.get("/:userId", getUser);
+router.get("/", auth, getUsers);
+router.get("/:userId", auth, getUser);
 
 router.get("/me", auth, getCurrentUser);
 
