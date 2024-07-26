@@ -3,6 +3,16 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const indexRouter = require("./routes/index");
 
+
+if (process.env.NODE_ENV === "test") {
+  app.use((req, res, next) => {
+    req.user = {
+      _id: "5d8b8592978f8bd833ca8133",
+    };
+    next();
+  });
+}
+
 const app = express();
 const { PORT = 3001 } = process.env;
 
