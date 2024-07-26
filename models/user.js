@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
+const { ERROR_MESSAGES } = require("../utils/errors");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -41,11 +42,11 @@ userSchema.statics.findUserByCredentials = function (email, password) {
     .select("+password")
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error("Invalid credentials"));
+        return Promise.reject(new Error(ERROR_MESSAGES.INVALID_CREDENTIALS));
       }
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
-          return Promise.reject(new Error("Invalid credentials"));
+          return Promise.reject(new Error(ERROR_MESSAGES.INVALID_CREDENTIALS));
         }
         return user;
       });

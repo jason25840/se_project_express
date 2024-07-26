@@ -18,47 +18,70 @@ const getUsers = (req, res) => {
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
+  if (!email || !password) {
+    return res
+      .status(ERROR_CODES.BAD_REQUEST)
+      .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
+  }
+
   User.findOne({ email })
     .then((existingUser) => {
       if (existingUser) {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .json({ message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
+        const error = new Error(ERROR_MESSAGES.EMAIL_ALREADY_EXISTS);
+        error.code = 11000; // duplicate key error code
+        throw error;
       }
-
       return bcrypt.hash(password, 10);
     })
-    .then((hashedPassword) =>
-      User.create({ name, avatar, email, password: hashedPassword })
-    )
-    .then((user) => res.status(201).send(user))
+    .then((hashedPassword) => {
+      return User.create({ name, avatar, email, password: hashedPassword });
+    })
+    .then((user) => {
+      const userWithoutPassword = user.toObject();
+      delete userWithoutPassword.password;
+      res.status(201).send(userWithoutPassword);
+    })
     .catch((err) => {
+      if (res.headersSent) {
+        console.error("Headers already sent");
+        return;
+      }
       console.error(err);
       if (err.code === 11000) {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
+        res
+          .status(ERROR_CODES.CONFLICT)
           .send({ message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
-      }
-      if (err.name === "ValidationError") {
-        return res
+      } else if (err.name === "ValidationError") {
+        res
           .status(ERROR_CODES.BAD_REQUEST)
           .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
+      } else if (err.message === "Unaurthorized") {
+        res
+          .status(ERROR_CODES.UNAUTHORIZED)
+          .send({ message: ERROR_MESSAGES.UNAUTHORIZED });
+      } else {
+        res
+          .status(ERROR_CODES.SERVER_ERROR)
+          .send({ message: ERROR_MESSAGES.SERVER_ERROR });
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
     });
 };
 
 const login = (req, res) => {
   const { email, password } = req.body;
-  return User.findUserByCredentials(email, password)
+
+  if (!email || !password) {
+    return res
+      .status(ERROR_CODES.BAD_REQUEST)
+      .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
+  }
+
+  User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
       res.send({ token });
-      return null;
     })
     .catch((err) => {
       console.error(err);
@@ -67,6 +90,12 @@ const login = (req, res) => {
         return res
           .status(ERROR_CODES.UNAUTHORIZED)
           .send({ message: ERROR_MESSAGES.INVALID_CREDENTIALS });
+      }
+
+      if (err.name === "ValidationError" || err.name === "CastError") {
+        return res
+          .status(ERROR_CODES.BAD_REQUEST)
+          .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
       }
 
       return res
@@ -103,6 +132,7 @@ const getUser = (req, res) => {
 
 const getCurrentUser = (req, res) => {
   const userId = req.user._id;
+
   User.findById(userId)
     .then((user) => {
       if (!user) {
