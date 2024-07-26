@@ -44,7 +44,10 @@ const createUser = (req, res) => {
     })
     .catch((err) => {
       if (res.headersSent) {
-        return null;
+        console.error("Headers have already been sent", err);
+        return res.status(ERROR_CODES.SERVER_ERROR).send({
+          message: ERROR_MESSAGES.SERVER_ERROR,
+        });
       }
 
       if (err.code === 11000) {
@@ -78,7 +81,7 @@ const login = (req, res) => {
       .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
   }
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
