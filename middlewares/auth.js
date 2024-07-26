@@ -29,7 +29,7 @@ const auth = (req, res, next) => {
   req.user = payload;
   console.log("Token verified, user:", req.user);
 
-  next();
+ return next();
 };
 
 module.exports = auth;

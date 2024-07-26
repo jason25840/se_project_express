@@ -40,6 +40,7 @@ const createUser = (req, res) => {
       const userWithoutPassword = user.toObject();
       delete userWithoutPassword.password;
       res.status(201).send(userWithoutPassword);
+      return null;
     })
     .catch((err) => {
       if (res.headersSent) {
