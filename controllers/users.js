@@ -48,19 +48,19 @@ const createUser = (req, res) => {
       }
       console.error(err);
       if (err.code === 11000) {
-        res
+        return res
           .status(ERROR_CODES.CONFLICT)
           .send({ message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
       } else if (err.name === "ValidationError") {
-        res
+        return res
           .status(ERROR_CODES.BAD_REQUEST)
           .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
       } else if (err.message === "Unaurthorized") {
-        res
+        return res
           .status(ERROR_CODES.UNAUTHORIZED)
           .send({ message: ERROR_MESSAGES.UNAUTHORIZED });
       } else {
-        res
+        return res
           .status(ERROR_CODES.SERVER_ERROR)
           .send({ message: ERROR_MESSAGES.SERVER_ERROR });
       }
