@@ -24,7 +24,7 @@ const createUser = (req, res) => {
       .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
   }
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .then((existingUser) => {
       if (existingUser) {
         const error = new Error(ERROR_MESSAGES.EMAIL_ALREADY_EXISTS);
