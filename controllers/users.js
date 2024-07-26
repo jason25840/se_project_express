@@ -44,28 +44,29 @@ const createUser = (req, res) => {
     })
     .catch((err) => {
       if (res.headersSent) {
-        console.error("Headers already sent");
-        return;
+        return null;
       }
-      console.error(err);
+
       if (err.code === 11000) {
         return res
           .status(ERROR_CODES.CONFLICT)
           .send({ message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
-      } else if (err.name === "ValidationError") {
+      }
+
+      if (err.name === "ValidationError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
           .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
-      } else if (err.message === "Unaurthorized") {
+      }
+
+      if (err.message === "Unaurthorized") {
         return res
           .status(ERROR_CODES.UNAUTHORIZED)
           .send({ message: ERROR_MESSAGES.UNAUTHORIZED });
-      } else {
-        return res
-          .status(ERROR_CODES.SERVER_ERROR)
-          .send({ message: ERROR_MESSAGES.SERVER_ERROR });
       }
     });
+
+  return null;
 };
 
 const login = (req, res) => {
