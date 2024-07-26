@@ -45,7 +45,7 @@ const createUser = (req, res) => {
     .catch((err) => {
       if (res.headersSent) {
         console.error("Headers have already been sent", err);
-        return null;
+        return res.status(500).send({ message: "Headers already sent" });
       }
 
       if (err.code === 11000) {
@@ -65,6 +65,8 @@ const createUser = (req, res) => {
           .status(ERROR_CODES.UNAUTHORIZED)
           .send({ message: ERROR_MESSAGES.UNAUTHORIZED });
       }
+
+      return null;
     });
 };
 
