@@ -4,18 +4,7 @@ const User = require("../models/user");
 const { ERROR_CODES, ERROR_MESSAGES } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
-    });
-};
-
-const createUser = (req, res) => {
+const createUser = async (req, res) => {
   const { name, avatar, email, password } = req.body;
 
   if (!email || !password) {
@@ -24,50 +13,37 @@ const createUser = (req, res) => {
       .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
   }
 
-  return User.findOne({ email })
-    .then((existingUser) => {
-      if (existingUser) {
-        const error = new Error(ERROR_MESSAGES.EMAIL_ALREADY_EXISTS);
-        error.code = 11000; // duplicate key error code
-        throw error;
-      }
-      return bcrypt.hash(password, 10);
-    })
-    .then((hashedPassword) =>
-      User.create({ name, avatar, email, password: hashedPassword })
-    )
-    .then((user) => {
-      const userWithoutPassword = user.toObject();
-      delete userWithoutPassword.password;
-      res.status(201).send(userWithoutPassword);
-      return null;
-    })
-    .catch((err) => {
-      if (res.headersSent) {
-        console.error("Headers have already been sent", err);
-        return res.status(500).send({ message: "Headers already sent" });
-      }
-
-      if (err.code === 11000) {
-        return res
-          .status(ERROR_CODES.CONFLICT)
-          .send({ message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
-      }
-
-      if (err.name === "ValidationError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
-      }
-
-      if (err.message === "Unaurthorized") {
-        return res
-          .status(ERROR_CODES.UNAUTHORIZED)
-          .send({ message: ERROR_MESSAGES.UNAUTHORIZED });
-      }
-
-      return null;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      avatar,
+      email,
+      password: hashedPassword,
     });
+
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+
+    return res.status(201).send(userWithoutPassword);
+  } catch (err) {
+    if (err.code === 11000) {
+      return res
+        .status(ERROR_CODES.CONFLICT)
+        .send({ message: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
+    }
+
+    if (err.name === "ValidationError") {
+      return res
+        .status(ERROR_CODES.BAD_REQUEST)
+        .send({ message: ERROR_MESSAGES.VALIDATION_ERROR });
+    }
+
+    console.error("Error creating user:", err);
+    return res
+      .status(ERROR_CODES.SERVER_ERROR)
+      .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+  }
 };
 
 const login = (req, res) => {
@@ -107,32 +83,6 @@ const login = (req, res) => {
     });
 };
 
-const getUser = (req, res) => {
-  const { userId } = req.params;
-  User.findById(userId)
-    .orFail(new Error(ERROR_MESSAGES.NOT_FOUND))
-    .then((user) => {
-      res.status(200).send(user);
-      return null;
-    })
-    .catch((err) => {
-      console.error(err);
-      if (err.message === ERROR_MESSAGES.NOT_FOUND) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
-      }
-      if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.INVALID_ITEM_ID });
-      }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
-    });
-};
-
 const getCurrentUser = (req, res) => {
   const userId = req.user._id;
 
@@ -162,7 +112,7 @@ const updateProfile = (req, res) => {
     { new: true, runValidators: true }
   )
     .orFail(new Error(ERROR_MESSAGES.NOT_FOUND))
-    .then((user) => res.status(200).send(user))
+    .then((data) => res.send({ data }))
     .catch((err) => {
       console.error(err);
       if (err.message === ERROR_MESSAGES.NOT_FOUND) {
