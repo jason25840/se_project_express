@@ -7,6 +7,8 @@ const {
 } = require("../controllers/users");
 const auth = require("../middlewares/auth");
 
+router.use(auth);
+
 router.get("/", auth, getUsers);
 router.get("/me", auth, getCurrentUser);
 router.get("/:userId", auth, getUser);
