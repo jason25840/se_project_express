@@ -17,9 +17,7 @@ if (process.env.NODE_ENV === "test") {
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
-  .then(() => {
-    console.log("Connected to MongoDB");
-  })
+  .then(() => {})
   .catch((err) => {
     console.error("Failed to connect to MongoDB", err);
   });
@@ -29,6 +27,4 @@ app.use(express.json());
 
 app.use("/", indexRouter);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.listen(PORT, () => {});
