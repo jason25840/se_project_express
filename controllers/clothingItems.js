@@ -1,6 +1,12 @@
 const validator = require("validator");
 const ClothingItem = require("../models/clothingItem");
 const { ERROR_CODES, ERROR_MESSAGES } = require("../utils/errors");
+const {
+  NotFoundError,
+  BadRequestError,
+  ForbiddenError,
+} = require("../utils/custom-errors");
+const { NotFoundError } = require("../utils/custom-errors");
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
@@ -21,84 +27,60 @@ const createItem = (req, res) => {
     .then((item) => res.status(201).json(item))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.INVALID_DATA });
+        returnnext(new BadRequestError(ERROR_MESSAGES.INVALID_DATA));
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+
+      next(err);
     });
 };
 
-const getItem = (req, res) => {
+const getItem = (req, res, next) => {
   const { itemId } = req.params;
 
   ClothingItem.findById(itemId)
-    .orFail(new Error(ERROR_MESSAGES.NOT_FOUND))
+    .orFail(() => new NotFoundError(ERROR_MESSAGES.NOT_FOUND))
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      if (err.message === ERROR_MESSAGES.NOT_FOUND) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
-      }
       if (err.kind === "ObjectId" || err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.INVALID_ITEM_ID });
+        return next(new BadRequestError(ERROR_MESSAGES.INVALID_ITEM_ID));
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+
+      next(err);
     });
 };
 
-const getItems = (req, res) => {
+const getItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
-    .catch(() =>
-      res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR })
-    );
+    .catch((err) => next(err));
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
   const owner = req.user._id;
 
   ClothingItem.findById(itemId)
-    .orFail(new Error(ERROR_MESSAGES.NOT_FOUND))
+    .orFail(() => new NotFoundError(ERROR_MESSAGES.NOT_FOUND))
     .then((item) => {
-      if (item.owner.toString() !== owner) {
-        return res
-          .status(ERROR_CODES.FORBIDDEN)
-          .send({ message: ERROR_MESSAGES.FORBIDDEN });
+      if (!item) {
+        throw new NotFoundError(ERROR_MESSAGES.NOT_FOUND);
       }
-      return ClothingItem.findByIdAndRemove(itemId).then((deletedItem) =>
-        res.status(200).send(deletedItem)
-      );
+      if (item.owner.toString() !== owner) {
+        throw new ForbiddenError(ERROR_MESSAGES.FORBIDDEN);
+      }
+      return ClothingItem.findByIdAndRemove(itemId)
+        .then((deletedItem) => res.status(200).send(deletedItem))
+        .catch((err) => next(err));
     })
     .catch((err) => {
-      console.error(err);
-      if (err.message === ERROR_MESSAGES.NOT_FOUND) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
-      }
       if (err.kind === "ObjectId" || err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.INVALID_ITEM_ID });
+        return next(new BadRequestError(ERROR_MESSAGES.INVALID_ITEM_ID));
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+      next(err);
     });
 };
 
-const likeItem = (req, res) => {
+const likeItem = (req, res, next) => {
   const { itemId } = req.params;
 
   ClothingItem.findByIdAndUpdate(
@@ -106,22 +88,13 @@ const likeItem = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
-    .orFail(new Error(ERROR_MESSAGES.NOT_FOUND))
+    .orFail(() => new NotFoundError(ERROR_MESSAGES.NOT_FOUND))
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      if (err.message === ERROR_MESSAGES.NOT_FOUND) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
-      }
       if (err.kind === "ObjectId" || err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.INVALID_ITEM_ID });
+        return next(new BadRequestError(ERROR_MESSAGES.INVALID_ITEM_ID));
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+      next(err);
     });
 };
 
@@ -133,22 +106,13 @@ const dislikeItem = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true }
   )
-    .orFail(new Error(ERROR_MESSAGES.NOT_FOUND))
+    .orFail(() => new NotFoundError(ERROR_MESSAGES.NOT_FOUND))
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      if (err.message === ERROR_MESSAGES.NOT_FOUND) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
-      }
       if (err.kind === "ObjectId" || err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.INVALID_ITEM_ID });
+        return next(new BadRequestError(ERROR_MESSAGES.INVALID_ITEM_ID));
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+      next(err);
     });
 };
 
