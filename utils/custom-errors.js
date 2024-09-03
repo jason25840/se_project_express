@@ -1,5 +1,3 @@
-// errors/custom-errors.js
-
 class BadRequestError extends Error {
   constructor(message) {
     super(message);

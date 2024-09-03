@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const indexRouter = require("./routes/index");
 const errorHandler = require("./middlewares/errorHandler");
+const { errors } = require("celebrate");
+const { errorLogger, requestLogger } = require("./middlewares/logger");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -25,10 +27,16 @@ mongoose
     console.error("Failed to connect to MongoDB", err);
   });
 
+app.use(requestLogger);
+
 app.use(cors());
 app.use(express.json());
 
 app.use("/", indexRouter);
+
+app.use(errorLogger);
+
+app.use(errors());
 
 app.use(errorHandler);
 

@@ -6,16 +6,13 @@ const {
   BadRequestError,
   ForbiddenError,
 } = require("../utils/custom-errors");
-const { NotFoundError } = require("../utils/custom-errors");
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
   if (!validator.isURL(imageUrl)) {
-    return res
-      .status(ERROR_CODES.BAD_REQUEST)
-      .send({ message: ERROR_MESSAGES.INVALID_URL });
+    return next(new BadRequestError(ERROR_MESSAGES.INVALID_URL));
   }
 
   return ClothingItem.create({
