@@ -1,6 +1,6 @@
 const validator = require("validator");
 const ClothingItem = require("../models/clothingItem");
-const { ERROR_CODES, ERROR_MESSAGES } = require("../utils/errors");
+const { ERROR_MESSAGES } = require("../utils/errors");
 const {
   NotFoundError,
   BadRequestError,
