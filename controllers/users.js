@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
-const { ERROR_MESSAGES } = require("../utils/errors");
 const {
   BadRequestError,
   UnauthorizedError,
@@ -14,7 +13,7 @@ const createUser = async (req, res) => {
   const { name, avatar, email, password } = req.body;
 
   if (!email || !password) {
-    return next(new BadRequestError(ERROR_MESSAGES.VALIDATION_ERROR));
+    return next(new BadRequestError("Invalid data provided"));
   }
 
   try {
@@ -32,22 +31,22 @@ const createUser = async (req, res) => {
     return res.status(201).send(userWithoutPassword);
   } catch (err) {
     if (err.code === 11000) {
-      return next(new ConflictError(ERROR_MESSAGES.EMAIL_ALREADY_EXISTS));
+      return next(new ConflictError("Email already exists"));
     }
 
     if (err.name === "ValidationError") {
-      return next(new BadRequestError(ERROR_MESSAGES.VALIDATION_ERROR));
+      return next(new BadRequestError("Invalid data provided"));
     }
 
     next(err);
   }
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return next(new BadRequestError(ERROR_MESSAGES.VALIDATION_ERROR));
+    return next(new BadRequestError("Invalid data provided"));
   }
 
   return User.findUserByCredentials(email, password)
@@ -58,12 +57,12 @@ const login = (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      if (err.message === ERROR_MESSAGES.INVALID_CREDENTIALS) {
-       return next(new UnauthorizedError(ERROR_MESSAGES.INVALID_CREDENTIALS));
-     }
+      if (err.message === "Incorrect email or password") {
+        return next(new UnauthorizedError("Unauthorized"));
+      }
 
       if (err.name === "ValidationError" || err.name === "CastError") {
-        return next(new BadRequestError(ERROR_MESSAGES.VALIDATION_ERROR));
+        return next(new BadRequestError("Invalid data provided"));
       }
 
       next(err);
@@ -76,7 +75,7 @@ const getCurrentUser = (req, res) => {
   User.findById(userId)
     .then((user) => {
       if (!user) {
-        return next(new NotFoundError(ERROR_MESSAGES.NOT_FOUND));
+        return next(new NotFoundError("Resource not found"));
       }
       return res.status(200).send(user);
     })
@@ -93,11 +92,11 @@ const updateProfile = (req, res) => {
     { name, avatar },
     { new: true, runValidators: true }
   )
-    .orFail(new NotFoundError(ERROR_MESSAGES.NOT_FOUND))
+    .orFail(new NotFoundError("Resource not found"))
     .then((data) => res.send({ data }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return next(new BadRequestError(ERROR_MESSAGES.VALIDATION_ERROR));
+        return next(new BadRequestError("Invalid data provided"));
       }
       next(err);
     });
