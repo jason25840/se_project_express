@@ -72,7 +72,7 @@ const validateToken = celebrate({
 
 const validateId = celebrate({
   params: Joi.object().keys({
-    id: Joi.string().required().hex().length(24).messages({
+    itemId: Joi.string().required().hex().length(24).messages({
       "string.empty": 'The "id" field must be filled in',
       "string.hex": 'The "id" field must be a valid hex string',
       "string.length": 'The "id" field must be 24 characters long',

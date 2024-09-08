@@ -1,12 +1,11 @@
 const validator = require("validator");
 const ClothingItem = require("../models/clothingItem");
-console.log("importing NotFoundError");
+
 const {
   NotFoundError,
   BadRequestError,
   ForbiddenError,
 } = require("../utils/custom-errors");
-console.log("NotFoundError imported");
 
 const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
@@ -80,6 +79,7 @@ const deleteItem = (req, res, next) => {
 
 const likeItem = (req, res, next) => {
   const { itemId } = req.params;
+  console.log("itemId", itemId);
 
   ClothingItem.findByIdAndUpdate(
     itemId,
