@@ -11,6 +11,12 @@ const { errorLogger, requestLogger } = require("./middlewares/logger");
 const app = express();
 const { PORT = 3001 } = process.env;
 
+app.get("/crash-test", () => {
+  setTimeout(() => {
+    throw new Error("Server will crash now");
+  }, 0);
+});
+
 if (process.env.NODE_ENV === "test") {
   app.use((req, res, next) => {
     req.user = {
