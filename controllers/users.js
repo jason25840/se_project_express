@@ -1,15 +1,15 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
-const {
-  BadRequestError,
-  UnauthorizedError,
-  NotFoundError,
-  ConflictError,
-} = require("../utils/custom-errors");
+
+const { NotFoundError } = require("../utils/notFoundError");
+const { ConflictError } = require("../utils/conflictError");
+const { BadRequestError } = require("../utils/badRequestError");
+const { UnauthorizedError } = require("../utils/unauthorizedError");
+
 const { JWT_SECRET } = require("../utils/config");
 
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   if (!email || !password) {
@@ -38,7 +38,7 @@ const createUser = async (req, res) => {
       return next(new BadRequestError("Invalid data provided"));
     }
 
-    next(err);
+    return next(err);
   }
 };
 
@@ -65,11 +65,11 @@ const login = (req, res, next) => {
         return next(new BadRequestError("Invalid data provided"));
       }
 
-      next(err);
+      return next(err);
     });
 };
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
 
   User.findById(userId)
@@ -79,12 +79,10 @@ const getCurrentUser = (req, res) => {
       }
       return res.status(200).send(user);
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch((err) => next(err));
 };
 
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   const userId = req.user._id;
   const { name, avatar } = req.body;
   User.findByIdAndUpdate(
@@ -98,7 +96,7 @@ const updateProfile = (req, res) => {
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Invalid data provided"));
       }
-      next(err);
+      return next(err);
     });
 };
 

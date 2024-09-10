@@ -5,9 +5,19 @@ const messageFormat = winston.format.combine(
   winston.format.timestamp(),
   winston.format.printf(
     ({ level, message, meta, timestamp }) =>
-      `${timestamp} ${level}: ${meta.error?.stack || message}`
+      `${timestamp} ${level}: ${meta?.error?.stack || message}`
   )
 );
+
+const generalLogger = winston.createLogger({
+  transports: [
+    new winston.transports.Console({ format: messageFormat }),
+    new winston.transports.File({
+      filename: "general.log",
+      format: winston.format.json(),
+    }),
+  ],
+});
 
 const requestLogger = expressWinston.logger({
   transports: [
@@ -26,4 +36,4 @@ const errorLogger = expressWinston.errorLogger({
   format: winston.format.json(),
 });
 
-module.exports = { requestLogger, errorLogger };
+module.exports = { requestLogger, errorLogger, generalLogger };

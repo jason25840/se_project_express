@@ -55,21 +55,6 @@ const validateLogin = celebrate({
   }),
 });
 
-const validateToken = celebrate({
-  headers: Joi.object()
-    .keys({
-      authorization: Joi.string()
-        .required()
-        .pattern(/^Bearer [a-fA-F0-9]{24}$/)
-        .messages({
-          "string.empty": 'The "authorization" header must be provided',
-          "string.pattern.base":
-            'The "authorization" header must be in the format: Bearer <24-character token>',
-        }),
-    })
-    .unknown(true),
-});
-
 const validateId = celebrate({
   params: Joi.object().keys({
     itemId: Joi.string().required().hex().length(24).messages({
@@ -84,6 +69,6 @@ module.exports = {
   validateClothingItem,
   validateUser,
   validateLogin,
-  validateToken,
   validateId,
+  validateURL,
 };
