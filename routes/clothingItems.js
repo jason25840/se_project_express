@@ -20,10 +20,10 @@ router.get("/", getItems);
 
 router.use(auth);
 
-router.get("/:itemId", celebrate(validateId), getItem);
-router.post("/", celebrate(validateClothingItem), createItem);
-router.delete("/:itemId", celebrate(validateId), deleteItem);
-router.put("/:itemId/likes", celebrate(validateId), likeItem);
-router.delete("/:itemId/likes", celebrate(validateId), dislikeItem);
+router.get("/:itemId", celebrate({ params: validateId }), getItem);
+router.post("/", celebrate({ body: validateClothingItem }), createItem);
+router.delete("/:itemId", celebrate({ params: validateId }), deleteItem);
+router.put("/:itemId/likes", celebrate({ params: validateId }), likeItem);
+router.delete("/:itemId/likes", celebrate({ params: validateId }), dislikeItem);
 
 module.exports = router;

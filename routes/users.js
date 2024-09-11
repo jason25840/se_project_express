@@ -8,6 +8,10 @@ const { updateProfileValidationSchema } = require("../middlewares/validation");
 router.use(auth);
 
 router.get("/me", getCurrentUser);
-router.patch("/me", celebrate(updateProfileValidationSchema), updateProfile);
+router.patch(
+  "/me",
+  celebrate({ body: updateProfileValidationSchema }),
+  updateProfile
+);
 
 module.exports = router;
