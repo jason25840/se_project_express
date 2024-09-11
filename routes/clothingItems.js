@@ -11,29 +11,19 @@ const {
 } = require("../controllers/clothingItems");
 
 const auth = require("../middlewares/auth");
-const { validateId } = require("../middlewares/validation");
-
-const idValidationSchema = {
-  params: Joi.object({
-    itemId: Joi.string().hex().length(24).required(),
-  }),
-};
-
-const createItemValidationSchema = {
-  body: Joi.object({
-    name: Joi.string().required().min(2).max(30),
-    imageUrl: Joi.string().required(),
-  }),
-};
+const {
+  validateId,
+  validateClothingItem,
+} = require("../middlewares/validation");
 
 router.get("/", getItems);
 
 router.use(auth);
 
-router.get("/:itemId", celebrate(idValidationSchema), validateId, getItem);
-router.post("/", celebrate(createItemValidationSchema), createItem);
-router.delete("/:itemId", celebrate(idValidationSchema), deleteItem);
-router.put("/:itemId/likes", celebrate(idValidationSchema), likeItem);
-router.delete("/:itemId/likes", celebrate(idValidationSchema), dislikeItem);
+router.get("/:itemId", celebrate(validateId), getItem);
+router.post("/", celebrate(validateClothingItem), createItem);
+router.delete("/:itemId", celebrate(validateId), deleteItem);
+router.put("/:itemId/likes", celebrate(validateId), likeItem);
+router.delete("/:itemId/likes", celebrate(validateId), dislikeItem);
 
 module.exports = router;

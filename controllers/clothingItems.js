@@ -1,9 +1,9 @@
 const validator = require("validator");
 const ClothingItem = require("../models/clothingItem");
 
-const { BadRequestError } = require("../utils/badRequestError");
-const { NotFoundError } = require("../utils/notFoundError");
-const { ForbiddenError } = require("../utils/forbiddenError");
+const BadRequestError = require("../utils/badRequestError");
+const NotFoundError = require("../utils/notFoundError");
+const ForbiddenError = require("../utils/forbiddenError");
 
 const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;

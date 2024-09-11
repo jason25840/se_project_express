@@ -22,16 +22,7 @@ app.get("/crash-test", () => {
   }, 0);
 });
 
-if (process.env.NODE_ENV === "test") {
-  app.use((req, res, next) => {
-    req.user = {
-      _id: process.env.TEST_USER_ID || "default_test_user_id",
-    };
-    return next();
-  });
-}
 app.use(requestLogger);
-app.use(errorLogger);
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
@@ -46,6 +37,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/", indexRouter);
+
+app.use(errorLogger);
 
 app.use(errors());
 
